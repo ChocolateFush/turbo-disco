@@ -1,6 +1,13 @@
 #define TOTAL_MOTOR_COUNT 1
-
 #define INITIAL_STEP_DELAY 5000
+
+// StepperMotor0Definitions
+#define M0mN 0
+#define M0eP 7
+#define M0oP 6
+#define M0dP 5
+#define M0pP 4
+#define M0sPR 400
 
 enum AccelerationModes{
   Linear = 0,
@@ -14,51 +21,54 @@ enum AccelerationStates{
   DECEL
   };
 
+enum States{
+  Calibration = 0,
+  WaitingForCommand,
+  InterpretingNewCommand,
+  CheckingSoftLimits,
+  MovingToPosition,
+  ErrorEncountered
+  };
+
+  enum MotorType{
+    STEPPER = 0,
+    SERVO
+  };
+
 class Motor{
   public:
+  MotorType motorType;
   long motorNumber;
   long enablePin;
   long optoPin;
   long directionPin;
   long pulsePin;
-  int currentPosition;
-  int targetPosition;
-  float currentStepDelay;
-  float targetStepDelay;
+  int currentPosition = 0;
+  int targetPosition = 0;
+  float startStepDelay = 10000;
+  float currentStepDelay = 10000;
+  float targetStepDelay = 10000;
   AccelerationModes accelerationMode;
-  long lastStepTimeMicroSeconds;
-  bool stepPinHigh; 
-  long directionInt; 
-  long halfwayToTarget;
-  bool rampUp;
-  long stepsPerRevolution;
-  long stepsInRampUp;
-  AccelerationStates accelerationState;
+  long lastStepTimeMicroSeconds = 0;
+  bool stepPinHigh = false; 
+  long directionInt = 1; 
+  long halfwayToTarget = 0;
+  long stepsPerRevolution = 400;
+  long stepsInRampUp = 0;
+  AccelerationStates accelerationState = STOP;
 
-  public: Motor(int mN, int eP, int oP, int dP, int pP, int sPR){
+  public: Motor(int mN, int eP, int oP, int dP, int pP, int sPR, MotorType mt){
     motorNumber = mN; // The number of motor relative to distance from shoulder joint
     enablePin = eP; // The enable pin for the motor driver
     optoPin = oP; // The opto pin for the motor driver
     directionPin = dP; // The direction pin for the motor driver
     pulsePin = pP; // The pulse pin for the motor driver
-    currentPosition = 0; // The current position relative to the predefined rest position
-    targetPosition = 0; // The target position relative to the predefined rest position.
-    currentStepDelay = 10000; // The current step delay of the motor between half pulses.
-    targetStepDelay = 100; // The target step delay of the motor between half pulses.
-    accelerationMode = Linear; // The mode of acceleration with Linear being the default.
-    lastStepTimeMicroSeconds = 0; // The last time that a step was completed.
-    halfwayToTarget = 0;
-    stepsInRampUp = 0;    
-    stepPinHigh = false;
-    directionInt = 1;
-    rampUp = true;
     stepsPerRevolution = sPR;
-    accelerationState = STOP;
+    motorType = mt;
     pinMode(enablePin, OUTPUT);
     pinMode(optoPin, OUTPUT);
     pinMode(directionPin, OUTPUT);
     pinMode(pulsePin, OUTPUT);
-
     digitalWrite(enablePin, HIGH);
     digitalWrite(optoPin, HIGH);
     digitalWrite(directionPin, HIGH);
@@ -72,13 +82,16 @@ class Motor{
       return;  
     }
 
-    // TODO - Ramping down doesnt seem to work. Make a flow chart of the important decisions. Checking using excel spreadsheet.
-      if((micros() - lastStepTimeMicroSeconds) >= (long)currentStepDelay){
+     if((micros() - lastStepTimeMicroSeconds) >= (long)currentStepDelay){
+        
         lastStepTimeMicroSeconds = micros();
+        
         if(stepPinHigh){
 
             switch(accelerationState){
+              
               case ACCEL:
+              
                 stepsInRampUp++;
                 currentStepDelay = (float)currentStepDelay - 2.0 * (float)currentStepDelay / (4.0 * stepsInRampUp + 1.0);
              
@@ -86,32 +99,42 @@ class Motor{
                   currentStepDelay = targetStepDelay;
                   if(abs(currentPosition - targetPosition) < halfwayToTarget){
                       accelerationState = DECEL;
-                    }else{
+                  }else{
                       accelerationState = RUN;
-                      }
                   }
+                }
                   
-                  if(abs(currentPosition - targetPosition) < halfwayToTarget){
-                      accelerationState = DECEL;
-                    }
+                if(abs(currentPosition - targetPosition) < halfwayToTarget){
+                    accelerationState = DECEL;
+                }
+                
               break;
+              
               case RUN:
+              
               if(abs(currentPosition - targetPosition) < stepsInRampUp){
                   accelerationState = DECEL;
-                }
+              }
+                
               break;
+              
               case DECEL:
+              
               stepsInRampUp--;
               currentStepDelay = (float)currentStepDelay/(1.0 - 2.0/(4.0 * stepsInRampUp + 1.0));
+              
               break;
+              
               case STOP:
               
               break;
+              
               }
           
             currentPosition += directionInt;
             digitalWrite(pulsePin, LOW);
             stepPinHigh = false;
+            
         }else{
             digitalWrite(pulsePin, HIGH);
             stepPinHigh = true;  
@@ -121,37 +144,21 @@ class Motor{
   
   };
 
-enum States{
-  Calibration = 0,
-  WaitingForCommand,
-  InterpretingNewCommand,
-  CheckingSoftLimits,
-  MovingToPosition,
-  ErrorEncountered
-  };
-
 States currentState = 0;
 String currentCommand = "";
+
 /*REMOVE COMMENTS Motor allMotors[6] = {
-    Motor(),
-    Motor(),
-    Motor(),
-    Motor(),
-    Motor(),
-    Motor(),
+    Motor(M0mN, M0eP, M0oP, M0dP, M0pP, M0sPR, STEPPER),
+    Motor(M1mN, M1eP, M1oP, M1dP, M1pP, M1sPR, STEPPER),
+    Motor(M2mN, M2eP, M2oP, M2dP, M2pP, M2sPR, STEPPER),
+    Motor(M3mN, M3eP, M3oP, M3dP, M3pP, M3sPR, SERVO),
+    Motor(M4mN, M4eP, M4oP, M4dP, M4pP, M4sPR, SERVO),
+    Motor(M5mN, M5eP, M5oP, M5dP, M5pP, M5sPR, SERVO)
   };
   */
 
-// StepperMotor0Definitions
-#define M0mN 0
-#define M0eP 7
-#define M0oP 6
-#define M0dP 5
-#define M0pP 4
-#define M0sPR 400
-
 Motor allMotors[1] = {
-  Motor(M0mN, M0eP, M0oP, M0dP, M0pP, M0sPR)
+  Motor(M0mN, M0eP, M0oP, M0dP, M0pP, M0sPR, STEPPER)
   };
 
 void DecodeCommandString(){
@@ -188,6 +195,18 @@ void DecodeCommandString(){
         Serial.print("TS: ");
         Serial.println(allMotors[currentMotorNumber].targetStepDelay);
         
+      }else if(currentCommand[i] == 'S' && currentCommand[i+1] == 'S'){
+        for(int j = i + 2; j < currentCommand.length(); j++){
+          if(currentCommand[j] > 58){
+              allMotors[currentMotorNumber].startStepDelay = (long)(currentCommand.substring(i+2, j).toInt());
+            break;  
+          }  
+        }
+        allMotors[currentMotorNumber].currentStepDelay = allMotors[currentMotorNumber].startStepDelay;
+        
+        Serial.print("SS: ");
+        Serial.println(allMotors[currentMotorNumber].startStepDelay);
+        
       }else if(currentCommand[i] == 'A'){
         allMotors[currentMotorNumber].accelerationMode = (int)currentCommand[i+1] - 48;
         Serial.print("A: ");
@@ -220,10 +239,9 @@ void SetDirection(){
       }
   }
 
-  void CalculateRamps(){
+  void InitialiseMotors(){
       for(int i = 0; i < TOTAL_MOTOR_COUNT; i++){
         allMotors[i].halfwayToTarget = abs(allMotors[i].currentPosition - allMotors[i].targetPosition)/2;
-        allMotors[i].currentStepDelay = INITIAL_STEP_DELAY;
         allMotors[i].stepsInRampUp = 0;
         allMotors[i].accelerationState = ACCEL;
       }
@@ -261,14 +279,13 @@ void loop() {
 
       DecodeCommandString();
       SetDirection();
-      CalculateRamps();
+      InitialiseMotors();
     
       currentState = CheckingSoftLimits;
     break;
     case CheckingSoftLimits:
       //Serial.println("STATE: CheckingSoftLimits");
-    currentState = ErrorEncountered
-    ;
+    currentState = ErrorEncountered;
     currentState = MovingToPosition;
     break;
     case MovingToPosition:
