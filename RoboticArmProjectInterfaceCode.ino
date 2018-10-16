@@ -56,6 +56,8 @@ class Motor{
   long stepsPerRevolution = 400;
   long stepsInRampUp = 0;
   AccelerationStates accelerationState = STOP;
+  int motorServoControlPin;
+  
 
   public: Motor(int mN, int eP, int oP, int dP, int pP, int sPR, MotorType mt){
     motorNumber = mN; // The number of motor relative to distance from shoulder joint
@@ -73,6 +75,12 @@ class Motor{
     digitalWrite(optoPin, HIGH);
     digitalWrite(directionPin, HIGH);
     digitalWrite(pulsePin, LOW);
+  }
+  
+  public: Motor(int mN, int mSCP, MotorType mt){
+    motorNumber = mN; // The number of motor relative to distance from shoulder joint
+    motorType = mt;
+    motorServoControlPin = mSCP;
   }
 
   void UpdateMotorPosition(){
@@ -151,9 +159,9 @@ String currentCommand = "";
     Motor(M0mN, M0eP, M0oP, M0dP, M0pP, M0sPR, STEPPER),
     Motor(M1mN, M1eP, M1oP, M1dP, M1pP, M1sPR, STEPPER),
     Motor(M2mN, M2eP, M2oP, M2dP, M2pP, M2sPR, STEPPER),
-    Motor(M3mN, M3eP, M3oP, M3dP, M3pP, M3sPR, SERVO),
-    Motor(M4mN, M4eP, M4oP, M4dP, M4pP, M4sPR, SERVO),
-    Motor(M5mN, M5eP, M5oP, M5dP, M5pP, M5sPR, SERVO)
+    Motor(M3mN, M3sCP,SERVO),
+    Motor(M4mN, M4sCP, SERVO),
+    Motor(M5mN, M5sCP, SERVO)
   };
   */
 
