@@ -1,33 +1,24 @@
-#define TOTAL_MOTOR_COUNT 1
-#define INITIAL_STEP_DELAY 5000
+#include <Servo.h>
 
-// StepperMotor0Definitions
-#define M0mN 0
-#define M0eP 7
-#define M0oP 6
-#define M0dP 5
-#define M0pP 4
-#define M0sPR 400
+#define M1dP 7
+#define M1pP 6
+#define M1dC 1
+#define M2dP 3
+#define M2pP 2
+#define M2dC -1
+#define M3dP 5
+#define M3pP 4
+#define M3dC 1
+#define M4sCP 10
+#define M5sCP 9
+#define M6sCP 11
 
-enum AccelerationModes{
-  Linear = 0,
-  NonLinear
-  };
-  
-enum AccelerationStates{
-  STOP = 0,
-  ACCEL,
-  RUN,
-  DECEL
-  };
 
 enum States{
-  Calibration = 0,
-  WaitingForCommand,
-  InterpretingNewCommand,
-  CheckingSoftLimits,
-  MovingToPosition,
-  ErrorEncountered
+  WaitForNewCommands = 0,
+  Home,
+  CalculateNextMove,
+  MoveToPose
   };
 
   enum MotorType{
@@ -38,107 +29,83 @@ enum States{
 class Motor{
   public:
   MotorType motorType;
-  long motorNumber;
-  long enablePin;
-  long optoPin;
-  long directionPin;
-  long pulsePin;
-  int currentPosition = 0;
-  int targetPosition = 0;
-  float startStepDelay = 10000;
+  int directionPin; // Set in setup
+  int pulsePin; // Set in setup
+  int currentPosition = 0; //Set in Homing
+  int targetPosition = 0; 
   float currentStepDelay = 10000;
-  float targetStepDelay = 10000;
-  AccelerationModes accelerationMode;
-  long lastStepTimeMicroSeconds = 0;
+  float minStepDelay = 10000; // Set in Homing
   bool stepPinHigh = false; 
   long directionInt = 1; 
-  long halfwayToTarget = 0;
-  long stepsPerRevolution = 400;
-  long stepsInRampUp = 0;
-  AccelerationStates accelerationState = STOP;
-  int motorServoControlPin;
+  long stepsPerRevolution = 400; // Set in Homing
+  long lastStepTimeMicroSeconds;
+  int directionCorrector; // Set in setup
+  int servoControlPin;
+  Servo servoMotor;
   
-
-  public: Motor(int mN, int eP, int oP, int dP, int pP, int sPR, MotorType mt){
-    motorNumber = mN; // The number of motor relative to distance from shoulder joint
-    enablePin = eP; // The enable pin for the motor driver
-    optoPin = oP; // The opto pin for the motor driver
+  public: Motor(int dP, int pP, MotorType mt, int dC){
     directionPin = dP; // The direction pin for the motor driver
     pulsePin = pP; // The pulse pin for the motor driver
-    stepsPerRevolution = sPR;
     motorType = mt;
-    pinMode(enablePin, OUTPUT);
-    pinMode(optoPin, OUTPUT);
+    directionCorrector = dC;
     pinMode(directionPin, OUTPUT);
     pinMode(pulsePin, OUTPUT);
-    digitalWrite(enablePin, HIGH);
-    digitalWrite(optoPin, HIGH);
     digitalWrite(directionPin, HIGH);
     digitalWrite(pulsePin, LOW);
   }
   
-  public: Motor(int mN, int mSCP, MotorType mt){
-    motorNumber = mN; // The number of motor relative to distance from shoulder joint
+  public: Motor(int mSCP, MotorType mt){
+    servoControlPin = mSCP;
     motorType = mt;
-    motorServoControlPin = mSCP;
+    minStepDelay = 50;
   }
 
-  void UpdateMotorPosition(){
+  void init(){
+    servoMotor.attach(servoControlPin);  
+  }
 
-    if(currentPosition == targetPosition){
-      accelerationState = STOP;
-      return;  
-    }
+  void Home(){
+
+      if(directionInt*directionCorrector == 1){
+         digitalWrite(directionPin, HIGH);
+      }else{
+        digitalWrite(directionPin, LOW);  
+      }
 
      if((micros() - lastStepTimeMicroSeconds) >= (long)currentStepDelay){
         
         lastStepTimeMicroSeconds = micros();
         
         if(stepPinHigh){
+            digitalWrite(pulsePin, LOW);
+            stepPinHigh = false;
+            
+        }else{
+            digitalWrite(pulsePin, HIGH);
+            stepPinHigh = true;  
+        }
+      }
+  }
 
-            switch(accelerationState){
-              
-              case ACCEL:
-              
-                stepsInRampUp++;
-                currentStepDelay = (float)currentStepDelay - 2.0 * (float)currentStepDelay / (4.0 * stepsInRampUp + 1.0);
-             
-                if(currentStepDelay <= targetStepDelay){
-                  currentStepDelay = targetStepDelay;
-                  if(abs(currentPosition - targetPosition) < halfwayToTarget){
-                      accelerationState = DECEL;
-                  }else{
-                      accelerationState = RUN;
-                  }
-                }
-                  
-                if(abs(currentPosition - targetPosition) < halfwayToTarget){
-                    accelerationState = DECEL;
-                }
-                
-              break;
-              
-              case RUN:
-              
-              if(abs(currentPosition - targetPosition) < stepsInRampUp){
-                  accelerationState = DECEL;
-              }
-                
-              break;
-              
-              case DECEL:
-              
-              stepsInRampUp--;
-              currentStepDelay = (float)currentStepDelay/(1.0 - 2.0/(4.0 * stepsInRampUp + 1.0));
-              
-              break;
-              
-              case STOP:
-              
-              break;
-              
-              }
-          
+  void UpdateMotorPosition(){
+
+    if(currentPosition == targetPosition){
+      return;  
+    }
+
+     if((micros() - lastStepTimeMicroSeconds) >= (long)currentStepDelay){
+        
+        lastStepTimeMicroSeconds = micros();
+        if(motorType == SERVO && stepPinHigh){
+          currentPosition += directionInt;
+          servoMotor.write(currentPosition);
+          stepPinHigh = false;
+          return;  
+        }else if(motorType == SERVO && !stepPinHigh){
+          stepPinHigh = true;  
+          return;
+        }
+        if(stepPinHigh){
             currentPosition += directionInt;
             digitalWrite(pulsePin, LOW);
             stepPinHigh = false;
@@ -155,78 +122,117 @@ class Motor{
 States currentState = 0;
 String currentCommand = "";
 
-/*REMOVE COMMENTS Motor allMotors[6] = {
-    Motor(M0mN, M0eP, M0oP, M0dP, M0pP, M0sPR, STEPPER),
-    Motor(M1mN, M1eP, M1oP, M1dP, M1pP, M1sPR, STEPPER),
-    Motor(M2mN, M2eP, M2oP, M2dP, M2pP, M2sPR, STEPPER),
-    Motor(M3mN, M3sCP,SERVO),
-    Motor(M4mN, M4sCP, SERVO),
-    Motor(M5mN, M5sCP, SERVO)
-  };
-  */
-
-Motor allMotors[1] = {
-  Motor(M0mN, M0eP, M0oP, M0dP, M0pP, M0sPR, STEPPER)
+Motor allMotors[6] = {
+    Motor(M1dP, M1pP, STEPPER, M1dC),
+    Motor(M2dP, M2pP, STEPPER, M2dC),
+    Motor(M3dP, M3pP, STEPPER, M3dC),
+    Motor(M4sCP, SERVO),
+    Motor(M5sCP, SERVO),
+    Motor(M5sCP, SERVO)
   };
 
-void DecodeCommandString(){
+int commandCounter = 0;
 
-  int currentMotorNumber = 0;
-  for(int i = 0; i < currentCommand.length(); i++){
+int allStoredCommands[25][7];
+
+States InterpretCommandStrings(){
+
+  commandCounter = 0;
+
+  currentCommand = Serial.readString();
+  States returnState = WaitForNewCommands;
+  
+  if(currentCommand[0] == 'H'){
     
-      if(currentCommand[i] == 'M'){
-        currentMotorNumber = (int)currentCommand[i+1] - 48;
+      int startIndex = 0;
+      int endIndex = 0;
+      int delimiterCounter = 0;
+      
+      for(int i = 1; i < currentCommand.length(); i++){
         
-        Serial.print("M: ");
-        Serial.println(currentMotorNumber);
-        
-      }else if(currentCommand[i] == 'T' && currentCommand[i+1] == 'P'){
-        for(int j = i + 2; j < currentCommand.length(); j++){
-          if(currentCommand[j] > 58){
-              allMotors[currentMotorNumber].targetPosition = (long)(currentCommand.substring(i+2, j).toFloat()*allMotors[currentMotorNumber].stepsPerRevolution/360.0);
-            break;  
-          }  
-        }
+       if(currentCommand[i] == '/'){
+        startIndex = i+1;
+        endIndex = startIndex;
+          for(int j = i+1; j < currentCommand.length(); j++){
+            
+            if(currentCommand[j] == '/'){
+                endIndex = j;
+                break;
+              }  
+          }
+          
+            allStoredCommands[commandCounter][delimiterCounter] = currentCommand.substring(startIndex, endIndex).toInt();
+            Serial.println(currentCommand.substring(startIndex, endIndex).toInt());
+            delimiterCounter++;
 
-        Serial.print("TP: ");
-        Serial.println(allMotors[currentMotorNumber].targetPosition);
-        
-      }else if(currentCommand[i] == 'T' && currentCommand[i+1] == 'S'){
-        for(int j = i + 2; j < currentCommand.length(); j++){
-          if(currentCommand[j] > 58){
-              allMotors[currentMotorNumber].targetStepDelay = (long)(currentCommand.substring(i+2, j).toInt());
-            break;  
-          }  
+            if(delimiterCounter >= 7){
+              break;
+              }
+          
+          i = endIndex - 1;
+            
         }
-        allMotors[currentMotorNumber].currentStepDelay = 5000;
-        
-        Serial.print("TS: ");
-        Serial.println(allMotors[currentMotorNumber].targetStepDelay);
-        
-      }else if(currentCommand[i] == 'S' && currentCommand[i+1] == 'S'){
-        for(int j = i + 2; j < currentCommand.length(); j++){
-          if(currentCommand[j] > 58){
-              allMotors[currentMotorNumber].startStepDelay = (long)(currentCommand.substring(i+2, j).toInt());
-            break;  
-          }  
-        }
-        allMotors[currentMotorNumber].currentStepDelay = allMotors[currentMotorNumber].startStepDelay;
-        
-        Serial.print("SS: ");
-        Serial.println(allMotors[currentMotorNumber].startStepDelay);
-        
-      }else if(currentCommand[i] == 'A'){
-        allMotors[currentMotorNumber].accelerationMode = (int)currentCommand[i+1] - 48;
-        Serial.print("A: ");
-        Serial.println(allMotors[currentMotorNumber].accelerationMode);
       }
       
+      returnState = Home;
+
+      
+  }else if(currentCommand[0] == 'M'){
+    
+      int startIndex = 0;
+      int endIndex = 0;
+      int delimiterCounter = 0;
+      
+      delimiterCounter = 0;
+      startIndex = 0;
+      endIndex = 0;
+      
+      for(int i = 1; i < currentCommand.length(); i++){
+        
+       if(currentCommand[i] == '/'){
+        startIndex = i+1;
+        endIndex = startIndex;
+          for(int j = i+1; j < currentCommand.length(); j++){
+            
+            if(currentCommand[j] == '/'){
+                endIndex = j;
+                break;
+              }  
+          }
+          if(delimiterCounter <= 6){
+            allStoredCommands[commandCounter][delimiterCounter] = currentCommand.substring(startIndex, endIndex).toInt();
+            Serial.println(currentCommand.substring(startIndex, endIndex).toInt());
+            delimiterCounter++;
+          }
+          else if(delimiterCounter == 7){
+            commandCounter++;
+            delimiterCounter = 0;
+            }
+          i = endIndex - 1;
+            if(commandCounter >= 25){
+              currentCommand = currentCommand.substring(endIndex - 1);
+              break;
+            }
+        }
+      }
+      returnState = CalculateNextMove;  
   }
-  
+
+  Serial.println("All stored commands: ");
+for(int i = 0; i < commandCounter; i++){
+for(int j = 0; j < 7; j++)
+{
+  Serial.println(allStoredCommands[i][j]);
+  }
+  Serial.println("\n");
+}
+
+  return returnState;
+    
 }
 
 bool AllMotorsAtTarget(){
-  for(int i = 0; i < TOTAL_MOTOR_COUNT; i++){
+  for(int i = 0; i < 6; i++){
     if(allMotors[i].currentPosition != allMotors[i].targetPosition){
       return false;  
     }  
@@ -235,85 +241,175 @@ bool AllMotorsAtTarget(){
 }
 
 void SetDirection(){
-    for(int i = 0; i < TOTAL_MOTOR_COUNT; i++){
+    for(int i = 0; i < 6; i++){
         if(allMotors[i].targetPosition > allMotors[i].currentPosition){
-          digitalWrite(allMotors[i].directionPin, HIGH);
           allMotors[i].directionInt = 1;
           }
           else{
-            digitalWrite(allMotors[i].directionPin, LOW);
             allMotors[i].directionInt = -1;
           }
+
+          if(allMotors[i].directionInt*allMotors[i].directionCorrector == 1){
+            digitalWrite(allMotors[i].directionPin, HIGH);
+          }else{
+            digitalWrite(allMotors[i].directionPin, LOW);
+          }
+            
       }
   }
 
-  void InitialiseMotors(){
-      for(int i = 0; i < TOTAL_MOTOR_COUNT; i++){
-        allMotors[i].halfwayToTarget = abs(allMotors[i].currentPosition - allMotors[i].targetPosition)/2;
-        allMotors[i].stepsInRampUp = 0;
-        allMotors[i].accelerationState = ACCEL;
-      }
-  }
+int debounceArray[2][10] = {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}};
 
+bool DebouncedHigh(int pinNumber){
 
-void setup() {
-  Serial.begin(115200);
-  // put your setup code here, to run once:
-
+if(digitalRead(pinNumber) == HIGH){
+  debounceArray[pinNumber-12][9] = 1;
 }
 
+bool returnValue = true;
+
+for(int i = 0; i < 10; i++){
+    if(debounceArray[pinNumber-12][i] == 0){
+      returnValue = false;
+      }
+}
+
+for(int i = 0; i < 9; i++){
+    debounceArray[pinNumber-12][i] = debounceArray[pinNumber-12][i+1];
+  }
+
+  debounceArray[pinNumber-12][9] = 0;
+
+  return returnValue;
+  
+}
+
+bool AllHomed(){
+  bool bothHigh = true;
+
+  allMotors[1].directionInt = 1;
+  allMotors[2].directionInt = -1;
+  
+  if(!DebouncedHigh(12)){
+    bothHigh = false;
+    allMotors[2].Home();
+  }  
+  if(!DebouncedHigh(13)){
+    bothHigh = false;
+    allMotors[1].Home();
+  }  
+  if(bothHigh){
+    for(int i = 0; i < 6; i++){
+      allMotors[i].stepsPerRevolution = allStoredCommands[0][i];  
+    }
+
+    allMotors[0].minStepDelay = 500;
+    allMotors[1].minStepDelay = 1000;
+    allMotors[2].minStepDelay = 1000;
+    
+    return true;
+  }
+  return false;
+}
+  
+void setup() {
+  Serial.begin(115200);
+  Serial.setTimeout(50);
+  // put your setup code here, to run once:  
+
+  allMotors[3].init();
+  allMotors[4].init();
+  allMotors[5].init();
+}
+
+int currentStoredCommand = 0;
 
 void loop() {
 
+      long maxTotalTime = 0;
+      long currentTotalTime = 0;
+
   switch(currentState){
+    case WaitForNewCommands:
 
-    case Calibration:
-    currentState = WaitingForCommand;
-    break;
-    
-    case WaitingForCommand:
-
-      //Serial.println("STATE: WaitingForCommand");
-  
-      if(Serial.available() > 0){
-        currentCommand = Serial.readString();
-        currentState = InterpretingNewCommand;
+      if(Serial.available() > 0 || (currentCommand.length() > 0)){
+        currentState = InterpretCommandStrings();
       }
       
-      break;
+    break;
     
-    case InterpretingNewCommand:
-      //Serial.println("STATE: InterpretingNewCommand");
+    case Home:
 
-      DecodeCommandString();
+      allMotors[0].currentStepDelay = 10000;
+      allMotors[1].currentStepDelay = 10000;
+      allMotors[2].currentStepDelay = 10000;
+
+      if(AllHomed()){
+        currentState = WaitForNewCommands; 
+        allMotors[0].currentPosition = 0; 
+        allMotors[1].currentPosition = 172; 
+        allMotors[2].currentPosition = -420; 
+        for(int i = 3; i < 6; i++){
+            allMotors[i].servoMotor.write(90);
+            allMotors[i].currentPosition = 90;
+          }
+      }
+         
+    break;
+    
+    case CalculateNextMove:
+    
+Serial.println("CalculateNextMove");
+
+      for(int i = 0; i < 6; i++){
+        allMotors[i].targetPosition = allStoredCommands[currentStoredCommand][i];  
+      }
+
+      maxTotalTime = 0;
+
+      for(int i = 0; i < 6; i++){
+        currentTotalTime = allMotors[i].minStepDelay * abs(allMotors[i].currentPosition - allMotors[i].targetPosition);
+        if(currentTotalTime > maxTotalTime){
+          maxTotalTime = currentTotalTime;
+        }
+      }
+
+      for(int i = 0; i < 6; i++){
+          Serial.print("Motor ");
+          Serial.println(i);
+        if(allMotors[i].targetPosition != allMotors[i].currentPosition){
+          Serial.println((maxTotalTime* allStoredCommands[currentStoredCommand][6]) / (abs(allMotors[i].currentPosition - allMotors[i].targetPosition)));
+          allMotors[i].currentStepDelay = (maxTotalTime* allStoredCommands[currentStoredCommand][6]) / (abs(allMotors[i].currentPosition - allMotors[i].targetPosition));
+        }
+      }
+
       SetDirection();
-      InitialiseMotors();
+      
+      currentState = MoveToPose;
+      
+    break;
     
-      currentState = CheckingSoftLimits;
-    break;
-    case CheckingSoftLimits:
-      //Serial.println("STATE: CheckingSoftLimits");
-    currentState = ErrorEncountered;
-    currentState = MovingToPosition;
-    break;
-    case MovingToPosition:
-
-      for(int i = 0; i < TOTAL_MOTOR_COUNT; i++){
-
-        allMotors[i].UpdateMotorPosition();
-          
-      }
-      //Serial.println("STATE: MovingToPosition");
-
+    case MoveToPose:
+    
       if(AllMotorsAtTarget()){
-        currentState = WaitingForCommand;
+      
+        currentStoredCommand++;
+
+        if(currentStoredCommand >= commandCounter){
+          currentState = WaitForNewCommands;
+          currentStoredCommand = 0;
+          commandCounter = 0;
+        }else{
+          currentState = CalculateNextMove;
+        }
+      }else{
+
+         for(int i = 0; i < 6; i++){
+            allMotors[i].UpdateMotorPosition();
+          }
+        
       }
     break;
-    case ErrorEncountered:
-      //Serial.println("STATE: ErrorEncountered");
-    currentState = WaitingForCommand;
-    break;
-    
     
   }
 

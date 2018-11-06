@@ -1,22 +1,19 @@
+#include <Servo.h>
+
+Servo myServo1;
+
 void setup() {
   // put your setup code here, to run once:
 
   Serial.begin(115200);
-  pinMode(11, INPUT); // Shoulder
-  pinMode(12, INPUT); // Elbow
+  myServo1.attach(9);
   
 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-
-  if(digitalRead(11) == HIGH){
-    Serial.println("11 pushed");
-  }
-  if(digitalRead(12) == HIGH){
-    Serial.println("12 pushed");
-    
-    }
+  
+  myServo1.write(90);
 
 }

@@ -8,9 +8,9 @@ void setup() {
   // put your setup code here, to run once:
 
   Serial.begin(115200);
-  myServo2.attach(2);
-  myServo3.attach(3);
-  myServo4.attach(4);
+  myServo2.attach(9);
+  myServo3.attach(10);
+  myServo4.attach(11);
   delay(100);
   
   myServo2.write(90);
