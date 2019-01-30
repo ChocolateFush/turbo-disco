@@ -128,7 +128,7 @@ Motor allMotors[6] = {
     Motor(M3dP, M3pP, STEPPER, M3dC),
     Motor(M4sCP, SERVO),
     Motor(M5sCP, SERVO),
-    Motor(M5sCP, SERVO)
+    Motor(M6sCP, SERVO)
   };
 
 int commandCounter = 0;
@@ -140,6 +140,7 @@ States InterpretCommandStrings(){
   commandCounter = 0;
 
   currentCommand = Serial.readString();
+  
   States returnState = WaitForNewCommands;
   
   if(currentCommand[0] == 'H'){
@@ -162,10 +163,10 @@ States InterpretCommandStrings(){
           }
           
             allStoredCommands[commandCounter][delimiterCounter] = currentCommand.substring(startIndex, endIndex).toInt();
-            Serial.println(currentCommand.substring(startIndex, endIndex).toInt());
             delimiterCounter++;
 
             if(delimiterCounter >= 7){
+              currentCommand = currentCommand.substring(endIndex);
               break;
               }
           
@@ -201,7 +202,6 @@ States InterpretCommandStrings(){
           }
           if(delimiterCounter <= 6){
             allStoredCommands[commandCounter][delimiterCounter] = currentCommand.substring(startIndex, endIndex).toInt();
-            Serial.println(currentCommand.substring(startIndex, endIndex).toInt());
             delimiterCounter++;
           }
           else if(delimiterCounter == 7){
@@ -215,17 +215,8 @@ States InterpretCommandStrings(){
             }
         }
       }
-      returnState = CalculateNextMove;  
+      returnState = CalculateNextMove;
   }
-
-  Serial.println("All stored commands: ");
-for(int i = 0; i < commandCounter; i++){
-for(int j = 0; j < 7; j++)
-{
-  Serial.println(allStoredCommands[i][j]);
-  }
-  Serial.println("\n");
-}
 
   return returnState;
     
@@ -306,7 +297,9 @@ bool AllHomed(){
     allMotors[0].minStepDelay = 500;
     allMotors[1].minStepDelay = 1000;
     allMotors[2].minStepDelay = 1000;
-    
+
+    Serial.println("Load more");
+    currentCommand = "";
     return true;
   }
   return false;
@@ -314,7 +307,7 @@ bool AllHomed(){
   
 void setup() {
   Serial.begin(115200);
-  Serial.setTimeout(50);
+  Serial.setTimeout(500);
   // put your setup code here, to run once:  
 
   allMotors[3].init();
@@ -347,7 +340,7 @@ void loop() {
       if(AllHomed()){
         currentState = WaitForNewCommands; 
         allMotors[0].currentPosition = 0; 
-        allMotors[1].currentPosition = 172; 
+        allMotors[1].currentPosition = 130; 
         allMotors[2].currentPosition = -420; 
         for(int i = 3; i < 6; i++){
             allMotors[i].servoMotor.write(90);
@@ -358,8 +351,6 @@ void loop() {
     break;
     
     case CalculateNextMove:
-    
-Serial.println("CalculateNextMove");
 
       for(int i = 0; i < 6; i++){
         allMotors[i].targetPosition = allStoredCommands[currentStoredCommand][i];  
@@ -375,10 +366,8 @@ Serial.println("CalculateNextMove");
       }
 
       for(int i = 0; i < 6; i++){
-          Serial.print("Motor ");
-          Serial.println(i);
+         
         if(allMotors[i].targetPosition != allMotors[i].currentPosition){
-          Serial.println((maxTotalTime* allStoredCommands[currentStoredCommand][6]) / (abs(allMotors[i].currentPosition - allMotors[i].targetPosition)));
           allMotors[i].currentStepDelay = (maxTotalTime* allStoredCommands[currentStoredCommand][6]) / (abs(allMotors[i].currentPosition - allMotors[i].targetPosition));
         }
       }
@@ -392,6 +381,10 @@ Serial.println("CalculateNextMove");
     case MoveToPose:
     
       if(AllMotorsAtTarget()){
+
+        if(currentStoredCommand == (commandCounter - 1)){
+          Serial.println("Load more");  
+        }
       
         currentStoredCommand++;
 

@@ -1,0 +1,137 @@
+﻿<Window x:Class="Robot_Arm_Simulator_WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Robot_Arm_Simulator_WPF"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:helix="http://helix-toolkit.org/wpf"
+        mc:Ignorable="d"
+        Title="Turbo Disco Studio"
+        Width="1920"
+        Height="1080" WindowState="Maximized"
+        Name="mainWindow">
+
+    <Window.Resources>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Foreground" Value="White"></Setter>
+            <Setter Property="FontFamily" Value="./#Segoe UI"></Setter>
+            <Setter Property="Background" Value="#FE5F00"></Setter>
+            <Setter Property="BorderBrush" Value="#FCBF49"></Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FCBF49"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="Grid">
+            <Setter Property="Background" Value="#003049"></Setter>
+        </Style>
+        <Style TargetType="ListViewItem">
+            <Setter Property="Margin" Value="4"></Setter>
+            <Setter Property="Padding" Value="16"></Setter>
+            <Setter Property="BorderBrush" Value="Orange"></Setter>
+            <Setter Property="BorderThickness" Value="1"></Setter>
+        </Style>
+    </Window.Resources>
+    <Grid Name="overallGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"></RowDefinition>
+            <RowDefinition Height="7*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Name="homeBarGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"></ColumnDefinition>
+                <ColumnDefinition Width="200"></ColumnDefinition>
+                <ColumnDefinition Width="200"></ColumnDefinition>
+                <ColumnDefinition Width="200"></ColumnDefinition>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" FontSize="20" Name="runRobotButton" Click="runRobotButton_Click">Run Robot</Button>
+            <Button Grid.Column="1" FontSize="20" Name="runSimulatorButton" Click="runSimulatorButton_Click">Run Simulator</Button>
+            <Button Grid.Column="2" FontSize="20" Name="devicesButton" Click="devicesButton_Click">Devices</Button>
+            <Button Grid.Column="3" FontSize="20" Name="homeButton">Home</Button>
+            <TextBox Grid.Column="4" Name="serialDataTextBox"></TextBox>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+                <ColumnDefinition Width="2*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid Name="fileGrid" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="64"></RowDefinition>
+                    <RowDefinition Height="64"></RowDefinition>
+                    <RowDefinition Height="1*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Button Name="newFileButton" Margin="32,4,32,4" Height="32" Click="newFileButton_Click">New File</Button>
+                    <Button Name="renameButton" Margin="32,4,32,4" Height="32" Grid.Column="1" Click="renameButton_Click">Rename File...</Button>
+                </Grid>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Button Name="deleteButton" Margin="32,4,32,4" Height="32" Click="deleteButton_Click">Delete File...</Button>
+                    <Button Name="saveButton" Margin="32,4,32,4" Height="32" Grid.Column="1" Click="saveButton_Click">Save File...</Button>
+                </Grid>
+                <ListView Grid.Row="2" Margin="32,16,32,32" Name="fileListView" MouseDoubleClick="fileListView_MouseDoubleClick">
+                   
+                </ListView>
+            </Grid>
+            <Grid Name="commandGrid" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="64"></RowDefinition>
+                    <RowDefinition Height="64"></RowDefinition>
+                    <RowDefinition Height="1*"></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Button Name="addAboveButton" Margin="32,4,32,4" Height="32" Click="addAboveButton_Click">Add Command Above</Button>
+                    <Button Name="addBelowButton" Margin="32,4,32,4" Height="32" Grid.Column="1" Click="addBelowButton_Click">Add Command Below</Button>
+                </Grid>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Button Name="deleteCommandButton" Margin="32,4,32,4" Height="32" Click="deleteCommandButton_Click">Delete Command</Button>
+                    <Button Name="commandSettingsButton" Margin="32,4,32,4" Height="32" Grid.Column="1">Command Settings</Button>
+                </Grid>
+                <ListView Grid.Row="2" Name="commandListView" Margin="32,16,32,32" MouseDoubleClick="commandListView_MouseDoubleClick">
+                </ListView>
+            </Grid>
+            <Grid Name="simulatorWindow" Grid.Column="2" Background="White">
+                <!-- The HelixViewport3D supports camera manipulation, and can be used just like the Viewport3D -->
+                <helix:HelixViewport3D ZoomExtentsWhenLoaded="True"  Name="m_helix_viewport">
+
+                    <!-- Remember to add light to the scene -->
+                    <helix:SunLight/>
+
+                </helix:HelixViewport3D>
+                <Grid Name="boxcontrol" Margin="0,0,0,10" VerticalAlignment="Bottom" HorizontalAlignment="Center" Background="White">
+                    <xctk:DoubleUpDown Name="joint0" Margin="0,0,0,0" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="50" />
+                    <xctk:DoubleUpDown Name="joint1" Margin="54,0,0,0" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="50" />
+                    <xctk:DoubleUpDown Name="joint2" Margin="108,0,0,0" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="50" />
+                    <xctk:DoubleUpDown Name="joint3" Margin="162,0,0,0" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="50" />
+                    <xctk:DoubleUpDown Name="joint4" Margin="216,0,0,0" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="50" />
+                    <xctk:DoubleUpDown Name="joint5" Margin="270,0,0,0" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="50" />
+                </Grid>
+            </Grid>
+
+        </Grid>
+        
+    </Grid>
+
+</Window>

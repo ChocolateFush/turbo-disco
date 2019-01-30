@@ -1,0 +1,317 @@
+﻿<Window x:Class="Robot_Arm_Simulator_WPF.CommandConfigurationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Robot_Arm_Simulator_WPF"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        mc:Ignorable="d"
+        Title="Command Settings" Height="450" Width="800">
+    <Window.Resources>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Foreground" Value="White"></Setter>
+            <Setter Property="FontFamily" Value="./#Segoe UI"></Setter>
+            <Setter Property="Background" Value="#FE5F00"></Setter>
+            <Setter Property="BorderBrush" Value="#FCBF49"></Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FCBF49"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="Label">
+            <Setter Property="Foreground" Value="White"></Setter>
+            <Setter Property="FontSize" Value="16"></Setter>
+        </Style>
+        <Style TargetType="Grid">
+            <Setter Property="Background" Value="#003049"></Setter>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+            <Setter Property="Margin" Value="4"></Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"></ColumnDefinition>
+            <ColumnDefinition Width="1*"></ColumnDefinition>
+            <ColumnDefinition Width="1*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+
+        <Border Grid.Column="0" BorderBrush="#FCBF49" BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32"></RowDefinition>
+                    <RowDefinition Height="1*"></RowDefinition>
+                    <RowDefinition Height="32"></RowDefinition>
+                    <RowDefinition Height="1*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0">Current Pose Matrix:</Label>
+                <UniformGrid Grid.Row="1" Margin="8" Rows="4" Columns="4" Name="currentPoseMatrixUniformGrid">
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                    <TextBox>0</TextBox>
+                </UniformGrid>
+                <Label Grid.Row="2">Current Joint Angles:</Label>
+                <UniformGrid Grid.Row="3" Rows="2" Columns="3" Name="currentPoseAnglesUniformGrid">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="2*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="White" FontFamily="#./Segoe UI">
+                            <Run>θ</Run>
+                            <Run Typography.Variants="Subscript">1</Run>
+                        </TextBlock>
+                        <TextBox Grid.Row="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">0</TextBox>
+                    </Grid>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="2*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="White" FontFamily="#./Segoe UI">
+                            <Run>θ</Run>
+                            <Run Typography.Variants="Subscript">2</Run>
+                        </TextBlock>
+                        <TextBox Grid.Row="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">0</TextBox>
+                    </Grid>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="2*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="White" FontFamily="#./Segoe UI">
+                            <Run>θ</Run>
+                            <Run Typography.Variants="Subscript">3</Run>
+                        </TextBlock>
+                        <TextBox Grid.Row="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">0</TextBox>
+                    </Grid>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="2*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="White" FontFamily="#./Segoe UI">
+                            <Run>θ</Run>
+                            <Run Typography.Variants="Subscript">4</Run>
+                        </TextBlock>
+                        <TextBox Grid.Row="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">0</TextBox>
+                    </Grid>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="2*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="White" FontFamily="#./Segoe UI">
+                            <Run>θ</Run>
+                            <Run Typography.Variants="Subscript">5</Run>
+                        </TextBlock>
+                        <TextBox Grid.Row="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">0</TextBox>
+                    </Grid>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="2*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="White" FontFamily="#./Segoe UI">
+                            <Run>θ</Run>
+                            <Run Typography.Variants="Subscript">6</Run>
+                        </TextBlock>
+                        <TextBox Grid.Row="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">0</TextBox>
+                    </Grid>
+                </UniformGrid>
+            </Grid>
+        </Border>
+        <Border Grid.Column="1" BorderBrush="#FCBF49" BorderThickness="1">
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="32"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Label>Transition Settings:</Label>
+                <UniformGrid Grid.Row="1" Rows="2" Columns="2">
+                    <StackPanel>
+                        <Label>Path Type</Label>
+                        <ComboBox HorizontalContentAlignment="Center" VerticalAlignment="Center" SelectionChanged="ComboBox_SelectionChanged" Name="pathTypeComboBox">
+                            <ComboBoxItem>Direct</ComboBoxItem>
+                            <ComboBoxItem>Straight Line</ComboBoxItem>
+                            <ComboBoxItem>Circle</ComboBoxItem>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel>
+                        <Label>Speed</Label>
+                        <xctk:DoubleUpDown Margin="4,0,4,0" Value="10" Name="speedUpDown" ValueChanged="speedUpDown_ValueChanged"></xctk:DoubleUpDown>
+                    </StackPanel>
+                    <StackPanel>
+                        <Label># of Extra Points</Label>
+                        <xctk:IntegerUpDown Margin="4,0,4,0" Value="0" Name="noOfPointsUpDown" ValueChanged="noOfPointsUpDown_ValueChanged"></xctk:IntegerUpDown>
+                    </StackPanel>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="1*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Label>Lock</Label>
+                        <UniformGrid Columns="4" Grid.Row="2">
+                            <CheckBox Name="xLockCheckBox" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Checked="xLockCheckBox_Checked" Unchecked="xLockCheckBox_Unchecked">X</CheckBox>
+                            <CheckBox Name="yLockCheckBox" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Checked="yLockCheckBox_Checked" Unchecked="yLockCheckBox_Unchecked">Y</CheckBox>
+                            <CheckBox Name="zLockCheckBox" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Checked="zLockCheckBox_Checked" Unchecked="zLockCheckBox_Unchecked">Z</CheckBox>
+                            <CheckBox Name="oLockCheckBox" HorizontalAlignment="Center" VerticalAlignment="Bottom" Foreground="White" Checked="oLockCheckBox_Checked" Margin="4,0,3,3" Unchecked="oLockCheckBox_Unchecked">O</CheckBox>
+                        </UniformGrid>
+                    </Grid>
+                </UniformGrid>
+                <Label Grid.Row="2">Path Settings:</Label>
+                <UniformGrid Grid.Row="3" Rows="1" Columns="2">
+                    <StackPanel Orientation="Vertical">
+                        <Label>Circle Plane</Label>
+                        <ComboBox Name="circlePlaneComboBox" VerticalAlignment="Center">
+                            <ComboBoxItem>XY</ComboBoxItem>
+                            <ComboBoxItem>XZ</ComboBoxItem>
+                            <ComboBoxItem>YZ</ComboBoxItem>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical">
+                        <Label>Circle Radius</Label>
+                        <xctk:DoubleUpDown Value="0" Name="circleRadiusUpDown" Margin="4,0,4,0"></xctk:DoubleUpDown>
+                    </StackPanel>
+                </UniformGrid>
+                <StackPanel Orientation="Vertical" Grid.Row="4">
+                    <Label>Circle Direction</Label>
+                    <ComboBox Name="circleDirectionComboBox">
+                        <ComboBoxItem>CW</ComboBoxItem>
+                        <ComboBoxItem>CCW</ComboBoxItem>
+                    </ComboBox>
+                </StackPanel>
+                <Button Grid.Row="5" Margin="4" Height="32" Click="Button_Click_1">Calculate</Button>
+                <StackPanel Orientation="Vertical" Grid.Row="6">
+                    <Label>Target Joint Configuration</Label>
+                    <ComboBox Name="targetJointConfigurationComboBox" SelectionChanged="targetJointConfigurationComboBox_SelectionChanged"></ComboBox>
+                </StackPanel>
+                <Button Grid.Row="7" Height="32" Margin="4" Click="Button_Click">Save</Button>
+            </Grid>
+        </Border>
+
+
+        <Border Grid.Column="2" BorderBrush="#FCBF49" BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32"></RowDefinition>
+                    <RowDefinition Height="1*"></RowDefinition>
+                    <RowDefinition Height="32"></RowDefinition>
+                    <RowDefinition Height="1*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0">Target Pose Matrix:</Label>
+                <UniformGrid Grid.Row="1" Margin="8" Rows="4" Columns="4" Name="targetPoseMatrixUniformGrid">
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                    <TextBox TextChanged="TextBox_TextChanged_1">0</TextBox>
+                </UniformGrid>
+                <Label Grid.Row="2">Target Joint Angles:</Label>
+                <UniformGrid Grid.Row="3" Rows="2" Columns="3" Name="targetPoseAnglesUniformGrid">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="2*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="White" FontFamily="#./Segoe UI">
+                            <Run>θ</Run>
+                            <Run Typography.Variants="Subscript">1</Run>
+                        </TextBlock>
+                        <TextBox Name="joint0" Grid.Row="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextChanged="TextBox_TextChanged">0</TextBox>
+                    </Grid>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="2*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="White" FontFamily="#./Segoe UI" >
+                            <Run>θ</Run>
+                            <Run Typography.Variants="Subscript">2</Run>
+                        </TextBlock>
+                        <TextBox Name="joint1" Grid.Row="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"  TextChanged="TextBox_TextChanged">0</TextBox>
+                    </Grid>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="2*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="White" FontFamily="#./Segoe UI">
+                            <Run>θ</Run>
+                            <Run Typography.Variants="Subscript">3</Run>
+                        </TextBlock>
+                        <TextBox Name="joint2" Grid.Row="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextChanged="TextBox_TextChanged">0</TextBox>
+                    </Grid>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="2*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="White" FontFamily="#./Segoe UI">
+                            <Run>θ</Run>
+                            <Run Typography.Variants="Subscript">4</Run>
+                        </TextBlock>
+                        <TextBox Name="joint3" Grid.Row="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextChanged="TextBox_TextChanged">0</TextBox>
+                    </Grid>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="2*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="White" FontFamily="#./Segoe UI">
+                            <Run>θ</Run>
+                            <Run Typography.Variants="Subscript">5</Run>
+                        </TextBlock>
+                        <TextBox Name="joint4" Grid.Row="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextChanged="TextBox_TextChanged">0</TextBox>
+                    </Grid>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"></RowDefinition>
+                            <RowDefinition Height="2*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="White" FontFamily="#./Segoe UI">
+                            <Run>θ</Run>
+                            <Run Typography.Variants="Subscript">6</Run>
+                        </TextBlock>
+                        <TextBox Name="joint5" Grid.Row="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextChanged="TextBox_TextChanged">0</TextBox>
+                    </Grid>
+                </UniformGrid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
